@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memo Site Builder</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#16171c">
+</head>
+<body>
+    <header class="app-header">
+        <h1 class="app-title">✨ Memo Site Builder</h1>
+        <nav class="app-tabs">
+            <button class="app-tab active" data-page="memo">📝 メモ</button>
+            <button class="app-tab" data-page="build">🪄 サイト生成</button>
+        </nav>
+    </header>
+
+    <!-- ================= メモ ================= -->
+    <div id="memoPage" class="page memo-layout">
+        <aside class="memo-sidebar">
+            <button id="newMemoBtn" class="new-btn">+ 新規メモ</button>
+            <div class="memo-search">
+                <input id="memoSearch" class="gen-input" type="search" placeholder="検索">
+            </div>
+            <ul id="memoList" class="memo-list"></ul>
+            <div class="memo-io">
+                <button id="exportBtn" class="small-btn">↓ CSV出力</button>
+                <label class="small-btn file-label">
+                    ↑ CSV取り込み
+                    <input type="file" id="importInput" accept=".csv" hidden>
+                </label>
+            </div>
+            <p class="io-hint">Kakumee で出力したCSVも取り込めます。</p>
+        </aside>
+        <main class="memo-editor">
+            <div id="memoEmpty" class="empty-state">
+                <div class="empty-icon">📝</div>
+                <p>「+ 新規メモ」からメモを書きましょう。<br>書いたメモをもとに、AIがサイトを作ります。</p>
+            </div>
+            <div id="memoForm" class="memo-form" hidden>
+                <input id="memoTitle" class="memo-title" type="text" placeholder="タイトル">
+                <div class="memo-tags">
+                    <div id="memoTagList" class="tag-list"></div>
+                    <input id="memoTagInput" class="tag-input" type="text" placeholder="タグを追加（Enter）" autocomplete="off">
+                </div>
+                <textarea id="memoBody" class="memo-body" placeholder="メモを入力...（Markdown も使えます）"></textarea>
+                <div class="memo-footer">
+                    <span id="memoUpdated" class="memo-updated"></span>
+                    <button id="deleteMemoBtn" class="delete-btn">削除</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= サイト生成 ================= -->
+    <div id="buildPage" class="page gen-layout" hidden>
+        <section class="gen-panel">
+            <div class="gen-step">
+                <h2 class="step-title"><span class="step-num">1</span>作るものを選ぶ</h2>
+                <div class="type-cards">
+                    <label class="type-card">
+                        <input type="radio" name="siteType" value="blog" checked>
+                        <span class="type-icon">📝</span>
+                        <span class="type-name">ブログ</span>
+                        <span class="type-desc">メモを記事として整理</span>
+                    </label>
+                    <label class="type-card">
+                        <input type="radio" name="siteType" value="portfolio">
+                        <span class="type-icon">🎨</span>
+                        <span class="type-name">ポートフォリオ</span>
+                        <span class="type-desc">実績・スキルを紹介</span>
+                    </label>
+                    <label class="type-card">
+                        <input type="radio" name="siteType" value="website">
+                        <span class="type-icon">🌐</span>
+                        <span class="type-name">ウェブサイト</span>
+                        <span class="type-desc">お店・サービス・活動の紹介</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="gen-step">
+                <h2 class="step-title"><span class="step-num">2</span>使うメモを選ぶ</h2>
+                <div class="note-picker-tools">
+                    <select id="tagFilter" class="gen-select">
+                        <option value="">すべてのタグ</option>
+                    </select>
+                    <button id="selectAllBtn" class="small-btn">全選択</button>
+                    <button id="selectNoneBtn" class="small-btn">全解除</button>
+                    <span id="selectedCount" class="selected-count"></span>
+                </div>
+                <ul id="notePicker" class="note-picker"></ul>
+            </div>
+
+            <div class="gen-step">
+                <h2 class="step-title"><span class="step-num">3</span>デザインと要望</h2>
+                <div class="field-row">
+                    <label class="field">
+                        <span class="field-label">サイト名（空欄ならAIにおまかせ）</span>
+                        <input id="siteName" class="gen-input" type="text" placeholder="例: 山田太郎のポートフォリオ">
+                    </label>
+                </div>
+                <div class="field-row two">
+                    <label class="field">
+                        <span class="field-label">雰囲気</span>
+                        <select id="styleSelect" class="gen-select">
+                            <option value="シンプルでミニマル">シンプル・ミニマル</option>
+                            <option value="モダンでスタイリッシュ">モダン・スタイリッシュ</option>
+                            <option value="ポップで明るく親しみやすい">ポップ・明るい</option>
+                            <option value="ナチュラルで温かみのある">ナチュラル・温かみ</option>
+                            <option value="ビジネス向けで信頼感のある">ビジネス・信頼感</option>
+                            <option value="ダークでクールな">ダーク・クール</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">メインカラー</span>
+                        <input id="colorInput" class="gen-color" type="color" value="#4a6cf7">
+                    </label>
+                </div>
+                <label class="field">
+                    <span class="field-label">追加の要望（任意）</span>
+                    <textarea id="extraInput" class="gen-textarea" rows="3" placeholder="例: プロフィール欄を入れてほしい / 記事はカテゴリ別に並べて / お問い合わせ先は example@example.com"></textarea>
+                </label>
+            </div>
+
+            <div class="gen-step">
+                <h2 class="step-title"><span class="step-num">4</span>Claude API キー</h2>
+                <div class="api-key-row">
+                    <input id="apiKeyInput" class="gen-input" type="password" placeholder="sk-ant-..." autocomplete="off">
+                    <button id="toggleKeyBtn" class="small-btn">表示</button>
+                </div>
+                <label class="remember-row">
+                    <input type="checkbox" id="rememberKey"> このブラウザにキーを保存する
+                </label>
+                <p class="note-text">
+                    キーはこのブラウザから Anthropic API に直接送信され、他のサーバーには送られません。
+                    共用のPCでは保存しないでください。キーは
+                    <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Anthropic Console</a>
+                    で発行できます（API利用料がかかります）。
+                </p>
+            </div>
+
+            <button id="generateBtn" class="generate-btn">✨ サイトを生成する</button>
+            <div id="genStatus" class="gen-status" role="status"></div>
+        </section>
+
+        <section class="gen-result">
+            <div class="result-toolbar">
+                <div class="result-tabs">
+                    <button class="result-tab active" data-view="preview">プレビュー</button>
+                    <button class="result-tab" data-view="code">HTML</button>
+                    <button class="result-tab" data-view="history">履歴</button>
+                </div>
+                <div class="result-actions">
+                    <button id="fullscreenBtn" class="small-btn" disabled>⛶ 全画面</button>
+                    <button id="copyBtn" class="small-btn" disabled>コピー</button>
+                    <button id="downloadBtn" class="small-btn primary" disabled>↓ ダウンロード</button>
+                </div>
+            </div>
+            <div class="result-body">
+                <div id="previewView" class="result-view">
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-icon">🪄</div>
+                        <p>メモを選んで「サイトを生成する」を押すと、<br>ここにAIが作ったサイトのプレビューが表示されます。</p>
+                    </div>
+                    <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts allow-popups" title="生成されたサイトのプレビュー" hidden></iframe>
+                </div>
+                <div id="codeView" class="result-view" hidden>
+                    <pre id="codeOutput" class="code-output"></pre>
+                </div>
+                <div id="historyView" class="result-view" hidden>
+                    <ul id="historyList" class="history-list"></ul>
+                </div>
+            </div>
+            <div id="refineBar" class="refine-bar" hidden>
+                <input id="refineInput" class="gen-input" type="text" placeholder="修正したい点を入力（例: ヘッダーをもっと大きく / 記事に目次を付けて）">
+                <button id="refineBtn" class="small-btn primary">修正する</button>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
